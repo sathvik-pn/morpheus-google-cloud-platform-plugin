@@ -39,7 +39,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	 */
 	@Override
 	String getDescription() {
-		return 'Describe me!'
+		return """Google Cloud Platform is a suite of cloud computing services offered by Google"""
 	}
 
 	/**
@@ -49,8 +49,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	 */
 	@Override
 	Icon getIcon() {
-		// TODO: change icon paths to correct filenames once added to your project
-		return new Icon(path:'cloud.svg', darkPath:'cloud-dark.svg')
+		return new Icon(path:'google-cloud.svg', darkPath:'google-cloud-dark.svg')
 	}
 
 	/**
@@ -60,8 +59,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	 */
 	@Override
 	Icon getCircularIcon() {
-		// TODO: change icon paths to correct filenames once added to your project
-		return new Icon(path:'cloud-circular.svg', darkPath:'cloud-circular-dark.svg')
+		return new Icon(path:'google-cloud-circular.svg', darkPath:'google-cloud-dark-circular.svg')
 	}
 
 	/**

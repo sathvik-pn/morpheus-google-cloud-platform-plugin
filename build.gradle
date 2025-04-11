@@ -78,11 +78,11 @@ jar {
 				'Morpheus-Name': 'Google Cloud Platform',
 				'Morpheus-Organization': 'morpheus',
 				'Morpheus-Code': 'google-cloud-platform-plugin',
-				'Morpheus-Description': 'TODO: Fill in the Plugin Description',
+				'Morpheus-Description': 'Morpheus Plugin for Google Cloud Platform',
 				'Morpheus-Logo': 'assets/morpheus.svg',
 				'Morpheus-Logo-Dark': 'assets/morpheus.svg',
 				'Morpheus-Labels': 'Plugin',
-				'Morpheus-Repo': 'https://github.com/gomorpheus/example',
+				'Morpheus-Repo': 'https://github.com/gomorpheus/morpheus-google-cloud-platform-plugin',
 				'Morpheus-Min-Appliance-Version': "6.3.0"
 		)
 	}

@@ -16,7 +16,9 @@
 package com.morpheusdata.googlecloudplatform
 
 import com.morpheusdata.core.Plugin
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class GoogleCloudPlatformPlugin extends Plugin {
 
     @Override
@@ -27,11 +29,12 @@ class GoogleCloudPlatformPlugin extends Plugin {
     @Override
     void initialize() {
         this.setName("Google Cloud Platform")
+        this.setDescription("Morpheus Plugin for Google Cloud Platform")
+
         this.registerProvider(new GoogleCloudPlatformCloudProvider(this,this.morpheus))
         this.registerProvider(new GoogleCloudPlatformProvisionProvider(this,this.morpheus))
-        
-		
-		
+
+        log.info("Google Cloud Platform Plugin initialized")
     }
 
     /**
@@ -39,6 +42,6 @@ class GoogleCloudPlatformPlugin extends Plugin {
      */
     @Override
     void onDestroy() {
-        //nothing to do for now
+        log.info("Google Cloud Platform Plugin Uninstalled")
     }
 }

@@ -68,7 +68,7 @@ class GoogleCloudPlatformProvisionProvider extends AbstractProvisionProvider imp
 	@Override
 	Icon getCircularIcon() {
 		// TODO: change icon paths to correct filenames once added to your project
-		return new Icon(path:'provision-circular.svg', darkPath:'provision-circular-dark.svg')
+		return new Icon(path:'google-cloud-circular.svg', darkPath:'google-cloud-dark-circular.svg')
 	}
 
 	/**
