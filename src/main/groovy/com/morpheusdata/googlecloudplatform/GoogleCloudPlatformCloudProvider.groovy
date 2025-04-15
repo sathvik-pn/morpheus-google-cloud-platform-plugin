@@ -20,8 +20,11 @@ import com.morpheusdata.model.StorageControllerType
 import com.morpheusdata.model.StorageVolumeType
 import com.morpheusdata.request.ValidateCloudRequest
 import com.morpheusdata.response.ServiceResponse
+import groovy.util.logging.Slf4j
 
+@Slf4j 
 class GoogleCloudPlatformCloudProvider implements CloudProvider {
+	// Reference: https://developer.morpheusdata.com/api/com/morpheusdata/core/providers/CloudProvider.html
 	public static final String CLOUD_PROVIDER_CODE = 'google-cloud-platform-plugin.cloud'
 
 	protected MorpheusContext context
@@ -68,8 +71,49 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	 */
 	@Override
 	Collection<OptionType> getOptionTypes() {
-		Collection<OptionType> options = []
-		return options
+		// Reference: https://developer.morpheusdata.com/api/com/morpheusdata/model/OptionType.InputType.html
+		/* learnings:
+		- displayOrder has to start with zero for first option
+		- [http-nio-8080-exec-9] Error Initializing Plugin Objects for Plugin: Google Cloud Platform ... Unloading Plugin....Validation Error(s) occurred during save(): - Field error in object 'com.morpheus.ComputeZoneType' on field 'optionTypes[0].fieldLabel': rejected value [null];
+		*/
+		log.info("SPN getOptionTypes() called.")
+		def displayOrder = 0
+		try {
+			Collection<OptionType> options = [
+				new OptionType(
+					code: 'projectId', 
+					name: 'Project ID',  
+					inputType: OptionType.InputType.TEXT,
+					displayOrder: displayOrder,
+					fieldContext: 'config', // check info source (credential,config,domain)
+					fieldLabel: 'projectIDFieldLabel', // UI details tab available as PROJECTIDFIELDLABEL
+					fieldCode: 'gomorpheus.label.gcp.projectID',
+					fieldName: 'projectIDFieldName',
+					required: true) // purple bar in textbox indicating required field
+				// new OptionType(
+				// 	code: 'serviceAccountKey', 
+				// 	name: 'Service Account Key', 
+				// 	inputType: OptionType.InputType.TEXT,
+				// 	displayOrder: displayOrder += 10,
+				// 	required: true),
+				// new OptionType(
+				// 	code: 'region', 
+				// 	name: 'Region', 
+				// 	inputType: OptionType.InputType.TEXT,
+				// 	displayOrder: displayOrder += 10,
+				// 	required: true),
+				// new OptionType(
+				// 	code: 'zone', 
+				// 	name: 'Zone', 
+				// 	inputType: OptionType.InputType.TEXT,
+				// 	displayOrder: displayOrder += 10,
+				// 	required: true)
+			]
+			return options
+		} catch (Exception e) {
+			log.error("Error in getOptionTypes: ${e.message}", e)
+			return []
+		}
 	}
 
 	/**
