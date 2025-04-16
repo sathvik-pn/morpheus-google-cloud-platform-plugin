@@ -85,34 +85,48 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 			fieldContext: 'config', // check info source (credential,config,domain)
 			fieldName: 'projectIDFieldName',
 			fieldCode: 'gomorpheus.label.projectID',
-			fieldLabel: 'projectIDFieldLabel', // UI details tab available as PROJECTIDFIELDLABEL
+			fieldLabel: 'Project ID', // UI details tab available as PROJECTIDFIELDLABEL
 			inputType: OptionType.InputType.TEXT,
 			placeHolder: 'Enter Project ID',
 			required: true
 		)
 
 		options << new OptionType(
-			name: 'Service Account Key name', 
-			code: 'gcp-plugin-serviceAccountKey', 
+			name: 'Client Email',
+			code: 'gcp-plugin-clientEmail',
 			displayOrder: 1,
-			fieldName: 'serviceAccountKeyFieldName',
-			fieldCode: 'gomorpheus.label.serviceAccountKey',
-			fieldLabel: 'serviceAccountKeyFieldLabel', // visible in UI in all-CAPS format
+			fieldContext: 'config', // check info source (credential,config,domain) 
+			fieldName: 'clientEmailFieldName',
+			fieldCode: 'gomorpheus.label.clientEmail',
+			fieldLabel: 'client Email', // visible in UI in all-CAPS format
 			inputType: OptionType.InputType.TEXT,
-			placeHolder: 'Enter Service Account Key name',
+			placeHolder: 'Enter Client Email',
 			required: true
 		)
 
 		options << new OptionType(
-			name: 'Use Host IAM Credentials',
-			code: 'gcp-plugin-use-host-creds',
+			name: 'Service Account Private Key', 
+			code: 'gcp-plugin-serviceAccountPrivateKey', 
 			displayOrder: 2,
-			fieldLabel: 'Use Host IAM Credentials',
-			fieldCode: 'gomorpheus.label.useHostCredentials',
-			fieldName: 'useHostCredentials',
-			inputType: OptionType.InputType.CHECKBOX,
+			fieldName: 'serviceAccountPrivateKeyFieldName',
+			fieldCode: 'gomorpheus.label.serviceAccountPrivateKey',
+			fieldLabel: 'Private Key', // visible in UI in all-CAPS format
+			inputType: OptionType.InputType.PASSWORD,
+			placeHolder: 'Enter Service Account Private Key',
 			required: true
 		)
+
+
+		// options << new OptionType(
+		// 	name: 'Use Host IAM Credentials',
+		// 	code: 'gcp-plugin-use-host-creds',
+		// 	displayOrder: 2,
+		// 	fieldLabel: 'Use Host IAM Credentials',
+		// 	fieldCode: 'gomorpheus.label.useHostCredentials',
+		// 	fieldName: 'useHostCredentials',
+		// 	inputType: OptionType.InputType.CHECKBOX,
+		// 	required: true
+		// )
 		// try {
 		// 		// new OptionType(
 		// 		// 	code: 'region', 
@@ -230,15 +244,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 		log.info(debug_log)
  
 		// SPN logs --- 
-		// [http-nio-8080-exec-7] SPN validate() called. 
-		// Cloud = com.morpheusdata.model.Cloud@64bb5f30 
-		// validateCloudRequest = com.morpheusdata.request.ValidateCloudRequest@7b8ad3c   
-		// cloudInfo  .getConfigMap = [projectIDFieldName:spn-project-id-1, serviceAccountKeyFieldName:spn-serviceaccount-name, _useHostCredentials:, useHostCredentials:on, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1] validateCloudRequest.credentialUsername = null validateCloudRequest.credentialPassword = null validateCloudRequest.credentialType = null validateCloudRequest.opts = [stepIndex:2, cloudfilter:, zoneType:google-cloud-platform-plugin.cloud, zone.zoneType.id:27, zone:[zoneType.id:27, zoneType:[id:27, code:google-cloud-platform-plugin.cloud], zoneType.code:google-cloud-platform-plugin.cloud, name:myspnname, code:, labelString:, location:, _enabled:, enabled:on, _autoRecoverPowerState:, autoRecoverPowerState:on, networkDomain.id:, networkDomain:[id:], timezone:, securityMode:off, guidanceMode:off, costingMode:off, agentMode:cloudInit, _defaultDatastoreSyncActive:, defaultDatastoreSyncActive:on, _defaultNetworkSyncActive:, defaultNetworkSyncActive:on, _applianceUrlProxyBypass:, applianceUrlProxyBypass:*******, noProxy:, userDataLinux:], zone.zoneType.code:google-cloud-platform-plugin.cloud, zone.name:myspnname, zone.code:, zone.labelString:, zone.location:, zone._enabled:, zone.enabled:on, zone._autoRecoverPowerState:, zone.autoRecoverPowerState:on, config.projectIDFieldName:spn-project-id-1, config:[projectIDFieldName:spn-project-id-1, serviceAccountKeyFieldName:spn-serviceaccount-name, _useHostCredentials:, useHostCredentials:on, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1], config.serviceAccountKeyFieldName:spn-serviceaccount-name, config._useHostCredentials:, config.useHostCredentials:on, zone.networkDomain.id:, config.applianceUrl:, zone.timezone:, config.datacenterName:, config.networkServer.id:unmanaged, zone.securityMode:off, config.securityServer:off, config.backupMode:internal, config.replicationMode:-1, zone.guidanceMode:off, zone.costingMode:off, zone.agentMode:cloudInit, zone._defaultDatastoreSyncActive:, zone.defaultDatastoreSyncActive:on, zone._defaultNetworkSyncActive:, zone.defaultNetworkSyncActive:on, zone._applianceUrlProxyBypass:, zone.applianceUrlProxyBypass:*******, zone.noProxy:, zone.userDataLinux:, controller:siteZone, action:step, user:Sathvik PN[sathvikpn - sathvik-pn@hpe.com]]  
-		// cloudInfo .getConfigMap().get('projectIDFieldName') = spn-project-id-1  
-		// cloudInfo .getConfigMap().get('serviceAccountKeyFieldName') = spn-serviceaccount-name  
-		// cloudInfo .getConfigMap().get('zoneFieldName') = null  
-		// cloudInfo .getConfigMap().get('regionFieldName') = null  
-		// cloudInfo .getConfigMap().get('useHostCredentials') = on
+			// [http-nio-8080-exec-6] SPN validate() called. Cloud = com.morpheusdata.model.Cloud@415c50f8 validateCloudRequest = com.morpheusdata.request.ValidateCloudRequest@2657511b cloudInfo.getConfigMap = [projectIDFieldName:my-pid-spn, clientEmailFieldName:sathvik-pn@service.gmail.com, serviceAccountPrivateKeyFieldName:spn-private-key-1234, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1] validateCloudRequest.credentialUsername = null validateCloudRequest.credentialPassword = null validateCloudRequest.credentialType = null validateCloudRequest.opts = [stepIndex:2, cloudfilter:, zoneType:google-cloud-platform-plugin.cloud, zone.zoneType.id:27, zone:[zoneType.id:27, zoneType:[id:27, code:google-cloud-platform-plugin.cloud], zoneType.code:google-cloud-platform-plugin.cloud, name:my-name-spn, code:, labelString:, location:, _enabled:, enabled:on, _autoRecoverPowerState:, autoRecoverPowerState:on, networkDomain.id:, networkDomain:[id:], timezone:, securityMode:off, guidanceMode:off, costingMode:off, agentMode:cloudInit, _defaultDatastoreSyncActive:, defaultDatastoreSyncActive:on, _defaultNetworkSyncActive:, defaultNetworkSyncActive:on, _applianceUrlProxyBypass:, applianceUrlProxyBypass:*******, noProxy:, userDataLinux:], zone.zoneType.code:google-cloud-platform-plugin.cloud, zone.name:my-name-spn, zone.code:, zone.labelString:, zone.location:, zone._enabled:, zone.enabled:on, zone._autoRecoverPowerState:, zone.autoRecoverPowerState:on, config.projectIDFieldName:my-pid-spn, config:[projectIDFieldName:my-pid-spn, clientEmailFieldName:sathvik-pn@service.gmail.com, serviceAccountPrivateKeyFieldName:spn-private-key-1234, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1], config.clientEmailFieldName:sathvik-pn@service.gmail.com, config.serviceAccountPrivateKeyFieldName:spn-private-key-1234, zone.networkDomain.id:, config.applianceUrl:, zone.timezone:, config.datacenterName:, config.networkServer.id:unmanaged, zone.securityMode:off, config.securityServer:off, config.backupMode:internal, config.replicationMode:-1, zone.guidanceMode:off, zone.costingMode:off, zone.agentMode:cloudInit, zone._defaultDatastoreSyncActive:, zone.defaultDatastoreSyncActive:on, zone._defaultNetworkSyncActive:, zone.defaultNetworkSyncActive:on, zone._applianceUrlProxyBypass:, zone.applianceUrlProxyBypass:*******, zone.noProxy:, zone.userDataLinux:, controller:siteZone, action:step, user:Sathvik PN[sathvikpn - sathvik-pn@hpe.com]]
 
 		try {
 			if(cloudInfo) {
@@ -254,7 +260,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 				}
 
 				if(!useHostCredentials) {
-					if(validateCloudRequest.credentialType?.toString().isNumber() || validateCloudRequest.credentialType == 'access-key-secret') {
+					if(validateCloudRequest.credentialType?.toString()?.isNumber() || validateCloudRequest.credentialType == 'access-key-secret') {
 						username = validateCloudRequest.credentialUsername
 						password = validateCloudRequest.credentialPassword
 
@@ -284,6 +290,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 				
 				def testResults = [success:false, message:"testConnectionFailed"]
 				log.info("SPN placeholder to make test connection to GCP")
+				// https://cloudresourcemanager.googleapis.com/v3/projects  ref:https://cloud.google.com/resource-manager/reference/rest/v3/projects/list
 				// def testResults = GoogleCloudPlatformComputeUtility.testConnection(cloudInfo) // TBI to-be-implemented
 				testResults.success = true
 				testResults.message = 'testConnectionPassed'
@@ -505,3 +512,105 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 		return 'Google Cloud Platform'
 	}
 }
+
+
+/*
+SPN LOGS --------
+
+SPN validate() called. Cloud = com.morpheusdata.model.Cloud@415c50f8 validateCloudRequest = com.morpheusdata.request.ValidateCloudRequest@2657511b cloudInfo.getConfigMap = [projectIDFieldName:my-pid-spn, clientEmailFieldName:sathvik-pn@service.gmail.com, serviceAccountPrivateKeyFieldName:spn-private-key-1234, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1] 
+
+validateCloudRequest.credentialUsername = null validateCloudRequest.credentialPassword = null validateCloudRequest.credentialType = null
+
+validateCloudRequest.opts =
+
+[
+    stepIndex: 2,
+    cloudfilter: null,
+    zoneType: "google-cloud-platform-plugin.cloud",
+    zone: [
+        zoneType: [
+            id: 27,
+            code: "google-cloud-platform-plugin.cloud"
+        ],
+        zoneType.code: "google-cloud-platform-plugin.cloud",
+        name: "my-name-spn",
+        code: null,
+        labelString: null,
+        location: null,
+        _enabled: null,
+        enabled: "on",
+        _autoRecoverPowerState: null,
+        autoRecoverPowerState: "on",
+        networkDomain.id: null,
+        networkDomain: [
+            id: null
+        ],
+        timezone: null,
+        securityMode: "off",
+        guidanceMode: "off",
+        costingMode: "off",
+        agentMode: "cloudInit",
+        _defaultDatastoreSyncActive: null,
+        defaultDatastoreSyncActive: "on",
+        _defaultNetworkSyncActive: null,
+        defaultNetworkSyncActive: "on",
+        _applianceUrlProxyBypass: null,
+        applianceUrlProxyBypass: "*******",
+        noProxy: null,
+        userDataLinux: null
+    ],
+    zone.zoneType.code: "google-cloud-platform-plugin.cloud",
+    zone.name: "my-name-spn",
+    zone.code: null,
+    zone.labelString: null,
+    zone.location: null,
+    zone._enabled: null,
+    zone.enabled: "on",
+    zone._autoRecoverPowerState: null,
+    zone.autoRecoverPowerState: "on",
+    config.projectIDFieldName: "my-pid-spn",
+    config: [
+        projectIDFieldName: "my-pid-spn",
+        clientEmailFieldName: "sathvik-pn@service.gmail.com",
+        serviceAccountPrivateKeyFieldName: "spn-private-key-1234",
+        applianceUrl: null,
+        datacenterName: null,
+        networkServer.id: "unmanaged",
+        networkServer: [
+            id: "unmanaged"
+        ],
+        securityServer: "off",
+        backupMode: "internal",
+        replicationMode: -1
+    ],
+    config.clientEmailFieldName: "sathvik-pn@service.gmail.com",
+    config.serviceAccountPrivateKeyFieldName: "spn-private-key-1234",
+    zone.networkDomain.id: null,
+    config.applianceUrl: null,
+    zone.timezone: null,
+    config.datacenterName: null,
+    config.networkServer.id: "unmanaged",
+    zone.securityMode: "off",
+    config.securityServer: "off",
+    config.backupMode: "internal",
+    config.replicationMode: -1,
+    zone.guidanceMode: "off",
+    zone.costingMode: "off",
+    zone.agentMode: "cloudInit",
+    zone._defaultDatastoreSyncActive: null,
+    zone.defaultDatastoreSyncActive: "on",
+    zone._defaultNetworkSyncActive: null,
+    zone.defaultNetworkSyncActive: "on",
+    zone._applianceUrlProxyBypass: null,
+    zone.applianceUrlProxyBypass: "*******",
+    zone.noProxy: null,
+    zone.userDataLinux: null,
+    controller: "siteZone",
+    action: "step",
+    user: "Sathvik PN[sathvikpn - sathvik-pn@hpe.com]"
+]
+
+
+
+
+*/
