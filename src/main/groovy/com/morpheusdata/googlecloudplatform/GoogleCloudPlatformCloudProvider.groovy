@@ -80,7 +80,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 		Collection<OptionType> options = []
 		options << new OptionType(
 			name: 'Project ID', 		
-			code: 'projectId',  
+			code: 'gcp-plugin-projectId',  
 			displayOrder: 0,
 			fieldContext: 'config', // check info source (credential,config,domain)
 			fieldName: 'projectIDFieldName',
@@ -93,7 +93,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 
 		options << new OptionType(
 			name: 'Service Account Key name', 
-			code: 'serviceAccountKey', 
+			code: 'gcp-plugin-serviceAccountKey', 
 			displayOrder: 1,
 			fieldName: 'serviceAccountKeyFieldName',
 			fieldCode: 'gomorpheus.label.serviceAccountKey',
@@ -102,28 +102,18 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 			placeHolder: 'Enter Service Account Key name',
 			required: true
 		)
+
+		options << new OptionType(
+			name: 'Use Host IAM Credentials',
+			code: 'gcp-plugin-use-host-creds',
+			displayOrder: 2,
+			fieldLabel: 'Use Host IAM Credentials',
+			fieldCode: 'gomorpheus.label.useHostCredentials',
+			fieldName: 'useHostCredentials',
+			inputType: OptionType.InputType.CHECKBOX,
+			required: true
+		)
 		// try {
-		// 	Collection<OptionType> options = [
-		// 		new OptionType(
-		// 			code: 'projectId', 
-		// 			name: 'Project ID',  
-		// 			inputType: OptionType.InputType.TEXT,
-		// 			displayOrder: displayOrder,
-		// 			fieldContext: 'config', // check info source (credential,config,domain)
-		// 			// fieldLabel: 'projectIDFieldLabel', // UI details tab available as PROJECTIDFIELDLABEL
-		// 			// fieldCode: 'gomorpheus.label.projectID',
-		// 			fieldName: 'projectIDFieldName',
-		// 			required: true
-		// 		), // purple bar in textbox indicating required field
-		// 		new OptionType(
-		// 			code: 'serviceAccountKey', 
-		// 			name: 'Service Account Key name', 
-		// 			inputType: OptionType.InputType.TEXT,
-		// 			fieldName: 'serviceAccountKeyFieldName',
-		// 			// fieldCode: 'gomorpheus.label.serviceAccountKey',
-		// 			displayOrder: displayOrder += 10,
-		// 			required: true
-		// 		),
 		// 		// new OptionType(
 		// 		// 	code: 'region', 
 		// 		// 	name: 'Region', 
@@ -231,51 +221,30 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	ServiceResponse validate(Cloud cloudInfo, ValidateCloudRequest validateCloudRequest) {
 		def debug_log = """
 		SPN validate() called. Cloud = ${cloudInfo} validateCloudRequest = ${validateCloudRequest}
-		cloudInfo.getConfigMap = ${cloudInfo.getConfigMap()}
-		cloudInfo.getConfigMap().get('projectIDFieldName') = ${cloudInfo.getConfigMap().get('projectIDFieldName')}
-		cloudInfo.getConfigMap().get('serviceAccountKeyFieldName') = ${cloudInfo.getConfigMap().get('serviceAccountKeyFieldName')}
-		cloudInfo.getConfigMap().get('zoneFieldName') = ${cloudInfo.getConfigMap().get('zoneFieldName')}
-		cloudInfo.getConfigMap().get('regionFieldName') = ${cloudInfo.getConfigMap().get('regionFieldName')}
-		cloudInfo.getConfigMap().get('networkServer.id') = ${cloudInfo.getConfigMap().get('networkServer.id')}
-		cloudInfo.getConfigMap().get('networkServer') = ${cloudInfo.getConfigMap().get('networkServer')}
-		cloudInfo.getConfigMap().get('securityServer') = ${cloudInfo.getConfigMap().get('securityServer')}
-		cloudInfo.getConfigMap().get('backupMode') = ${cloudInfo.getConfigMap().get('backupMode')}
-		cloudInfo.getConfigMap().get('replicationMode') = ${cloudInfo.getConfigMap().get('replicationMode')}
-		cloudInfo.getConfigMap().get('useHostCredentials') = ${cloudInfo.getConfigMap().get('useHostCredentials')}
-		cloudInfo.getConfigMap().get('endpoint') = ${cloudInfo.getConfigMap().get('endpoint')}
-		cloudInfo.getConfigMap().get('credentialType') = ${cloudInfo.getConfigMap().get('credentialType')}
-		cloudInfo.getConfigMap().get('credentialUsername') = ${cloudInfo.getConfigMap().get('credentialUsername')}
-		cloudInfo.getConfigMap().get('credentialPassword') = ${cloudInfo.getConfigMap().get('credentialPassword')}
-		cloudInfo.getConfigMap().get('accessKey') = ${cloudInfo.getConfigMap().get('accessKey')}
-		cloudInfo.getConfigMap().get('secretKey') = ${cloudInfo.getConfigMap().get('secretKey')}		
+		cloudInfo.getConfigMap = ${cloudInfo.getConfigMap()}                
+		validateCloudRequest.credentialUsername = ${validateCloudRequest.credentialUsername}        
+		validateCloudRequest.credentialPassword = ${validateCloudRequest.credentialPassword}        
+		validateCloudRequest.credentialType = ${validateCloudRequest.credentialType}        
+		validateCloudRequest.opts = ${validateCloudRequest.opts}
 		"""
 		log.info(debug_log)
-
-
+ 
 		// SPN logs --- 
-		// [http-nio-8080-exec-3] SPN validate() called. Cloud = com.morpheusdata.model.Cloud@21730003 validateCloudRequest = com.morpheusdata.request.ValidateCloudRequest@587c4e0 
-		// cloudInfo.getConfigMap = [projectIDFieldName:spn-pid-1, serviceAccountKeyFieldName:spn-serviceaccount-key, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1] 
-		// cloudInfo.getConfigMap().get('projectIDFieldName') = spn-pid-1 
-		// cloudInfo.getConfigMap().get('serviceAccountKeyFieldName') = spn-serviceaccount-key 
-		// cloudInfo.getConfigMap().get('zoneFieldName') = null 
-		// cloudInfo.getConfigMap().get('regionFieldName') = null 
-		// cloudInfo.getConfigMap().get('networkServer.id') = unmanaged 
-		// cloudInfo.getConfigMap().get('networkServer') = [id:unmanaged] 
-		// cloudInfo.getConfigMap().get('securityServer') = off 
-		// cloudInfo.getConfigMap().get('backupMode') = internal 
-		// cloudInfo.getConfigMap().get('replicationMode') = -1 
-		// cloudInfo.getConfigMap().get('useHostCredentials') = null 
-		// cloudInfo.getConfigMap().get('endpoint') = null 
-		// cloudInfo.getConfigMap().get('credentialType') = null 
-		// cloudInfo.getConfigMap().get('credentialUsername') = null 
-		// cloudInfo.getConfigMap().get('credentialPassword') = null 
-		// cloudInfo.getConfigMap().get('accessKey') = null 
-		// cloudInfo.getConfigMap().get('secretKey') = null
+		// [http-nio-8080-exec-7] SPN validate() called. 
+		// Cloud = com.morpheusdata.model.Cloud@64bb5f30 
+		// validateCloudRequest = com.morpheusdata.request.ValidateCloudRequest@7b8ad3c   
+		// cloudInfo  .getConfigMap = [projectIDFieldName:spn-project-id-1, serviceAccountKeyFieldName:spn-serviceaccount-name, _useHostCredentials:, useHostCredentials:on, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1] validateCloudRequest.credentialUsername = null validateCloudRequest.credentialPassword = null validateCloudRequest.credentialType = null validateCloudRequest.opts = [stepIndex:2, cloudfilter:, zoneType:google-cloud-platform-plugin.cloud, zone.zoneType.id:27, zone:[zoneType.id:27, zoneType:[id:27, code:google-cloud-platform-plugin.cloud], zoneType.code:google-cloud-platform-plugin.cloud, name:myspnname, code:, labelString:, location:, _enabled:, enabled:on, _autoRecoverPowerState:, autoRecoverPowerState:on, networkDomain.id:, networkDomain:[id:], timezone:, securityMode:off, guidanceMode:off, costingMode:off, agentMode:cloudInit, _defaultDatastoreSyncActive:, defaultDatastoreSyncActive:on, _defaultNetworkSyncActive:, defaultNetworkSyncActive:on, _applianceUrlProxyBypass:, applianceUrlProxyBypass:*******, noProxy:, userDataLinux:], zone.zoneType.code:google-cloud-platform-plugin.cloud, zone.name:myspnname, zone.code:, zone.labelString:, zone.location:, zone._enabled:, zone.enabled:on, zone._autoRecoverPowerState:, zone.autoRecoverPowerState:on, config.projectIDFieldName:spn-project-id-1, config:[projectIDFieldName:spn-project-id-1, serviceAccountKeyFieldName:spn-serviceaccount-name, _useHostCredentials:, useHostCredentials:on, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1], config.serviceAccountKeyFieldName:spn-serviceaccount-name, config._useHostCredentials:, config.useHostCredentials:on, zone.networkDomain.id:, config.applianceUrl:, zone.timezone:, config.datacenterName:, config.networkServer.id:unmanaged, zone.securityMode:off, config.securityServer:off, config.backupMode:internal, config.replicationMode:-1, zone.guidanceMode:off, zone.costingMode:off, zone.agentMode:cloudInit, zone._defaultDatastoreSyncActive:, zone.defaultDatastoreSyncActive:on, zone._defaultNetworkSyncActive:, zone.defaultNetworkSyncActive:on, zone._applianceUrlProxyBypass:, zone.applianceUrlProxyBypass:*******, zone.noProxy:, zone.userDataLinux:, controller:siteZone, action:step, user:Sathvik PN[sathvikpn - sathvik-pn@hpe.com]]  
+		// cloudInfo .getConfigMap().get('projectIDFieldName') = spn-project-id-1  
+		// cloudInfo .getConfigMap().get('serviceAccountKeyFieldName') = spn-serviceaccount-name  
+		// cloudInfo .getConfigMap().get('zoneFieldName') = null  
+		// cloudInfo .getConfigMap().get('regionFieldName') = null  
+		// cloudInfo .getConfigMap().get('useHostCredentials') = on
 
 		try {
 			if(cloudInfo) {
 				def config = cloudInfo.getConfigMap()
 				def useHostCredentials = config.useHostCredentials in [true, 'true', 'on']
+				// SPN useHostCredentials = true 	type = class java.lang.Boolean  value = 'on'
 				def username, password
 
 				if(config.endpoint == 'global') {
@@ -311,12 +280,19 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 
 				//test creds
 				cloudInfo.accountCredentialData = [username: username, password: password]
-				def testResults = AmazonComputeUtility.testConnection(cloudInfo)
+				
+				
+				def testResults = [success:false, message:"testConnectionFailed"]
+				log.info("SPN placeholder to make test connection to GCP")
+				// def testResults = GoogleCloudPlatformComputeUtility.testConnection(cloudInfo) // TBI to-be-implemented
+				testResults.success = true
+				testResults.message = 'testConnectionPassed'
+				testResults.invalidLogin = false
 				if(!testResults.success) {
 					if (testResults.invalidLogin) {
-						return new ServiceResponse(success: false, msg: 'Invalid amazon credentials')
+						return new ServiceResponse(success: false, msg: 'SPN Invalid GCP credentials')
 					} else {
-						return new ServiceResponse(success: false, msg: 'Unknown error connecting to amazon')
+						return new ServiceResponse(success: false, msg: 'SPN Unknown error connecting to GCP')
 					}
 				}
 				return ServiceResponse.success()
@@ -324,8 +300,8 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 				return new ServiceResponse(success: false, msg: 'SPN No cloud found')
 			}
 		} catch(e) {
-			log.error('Error validating cloud', e)
-			return new ServiceResponse(success: false, msg: 'SPN Error validating cloud')
+			log.error('SPN Error validating cloud', e)
+			return new ServiceResponse(success: false, msg: 'SPN Error validating cloud = ${e}')
 		}
 	}
 
