@@ -77,43 +77,76 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 		- [http-nio-8080-exec-9] Error Initializing Plugin Objects for Plugin: Google Cloud Platform ... Unloading Plugin....Validation Error(s) occurred during save(): - Field error in object 'com.morpheus.ComputeZoneType' on field 'optionTypes[0].fieldLabel': rejected value [null];
 		*/
 		log.info("SPN getOptionTypes() called.")
-		def displayOrder = 0
-		try {
-			Collection<OptionType> options = [
-				new OptionType(
-					code: 'projectId', 
-					name: 'Project ID',  
-					inputType: OptionType.InputType.TEXT,
-					displayOrder: displayOrder,
-					fieldContext: 'config', // check info source (credential,config,domain)
-					fieldLabel: 'projectIDFieldLabel', // UI details tab available as PROJECTIDFIELDLABEL
-					fieldCode: 'gomorpheus.label.gcp.projectID',
-					fieldName: 'projectIDFieldName',
-					required: true) // purple bar in textbox indicating required field
-				// new OptionType(
-				// 	code: 'serviceAccountKey', 
-				// 	name: 'Service Account Key', 
-				// 	inputType: OptionType.InputType.TEXT,
-				// 	displayOrder: displayOrder += 10,
-				// 	required: true),
-				// new OptionType(
-				// 	code: 'region', 
-				// 	name: 'Region', 
-				// 	inputType: OptionType.InputType.TEXT,
-				// 	displayOrder: displayOrder += 10,
-				// 	required: true),
-				// new OptionType(
-				// 	code: 'zone', 
-				// 	name: 'Zone', 
-				// 	inputType: OptionType.InputType.TEXT,
-				// 	displayOrder: displayOrder += 10,
-				// 	required: true)
-			]
-			return options
-		} catch (Exception e) {
-			log.error("Error in getOptionTypes: ${e.message}", e)
-			return []
-		}
+		Collection<OptionType> options = []
+		options << new OptionType(
+			name: 'Project ID', 		
+			code: 'projectId',  
+			displayOrder: 0,
+			fieldContext: 'config', // check info source (credential,config,domain)
+			fieldName: 'projectIDFieldName',
+			fieldCode: 'gomorpheus.label.projectID',
+			fieldLabel: 'projectIDFieldLabel', // UI details tab available as PROJECTIDFIELDLABEL
+			inputType: OptionType.InputType.TEXT,
+			placeHolder: 'Enter Project ID',
+			required: true
+		)
+
+		options << new OptionType(
+			name: 'Service Account Key name', 
+			code: 'serviceAccountKey', 
+			displayOrder: 1,
+			fieldName: 'serviceAccountKeyFieldName',
+			fieldCode: 'gomorpheus.label.serviceAccountKey',
+			fieldLabel: 'serviceAccountKeyFieldLabel', // visible in UI in all-CAPS format
+			inputType: OptionType.InputType.TEXT,
+			placeHolder: 'Enter Service Account Key name',
+			required: true
+		)
+		// try {
+		// 	Collection<OptionType> options = [
+		// 		new OptionType(
+		// 			code: 'projectId', 
+		// 			name: 'Project ID',  
+		// 			inputType: OptionType.InputType.TEXT,
+		// 			displayOrder: displayOrder,
+		// 			fieldContext: 'config', // check info source (credential,config,domain)
+		// 			// fieldLabel: 'projectIDFieldLabel', // UI details tab available as PROJECTIDFIELDLABEL
+		// 			// fieldCode: 'gomorpheus.label.projectID',
+		// 			fieldName: 'projectIDFieldName',
+		// 			required: true
+		// 		), // purple bar in textbox indicating required field
+		// 		new OptionType(
+		// 			code: 'serviceAccountKey', 
+		// 			name: 'Service Account Key name', 
+		// 			inputType: OptionType.InputType.TEXT,
+		// 			fieldName: 'serviceAccountKeyFieldName',
+		// 			// fieldCode: 'gomorpheus.label.serviceAccountKey',
+		// 			displayOrder: displayOrder += 10,
+		// 			required: true
+		// 		),
+		// 		// new OptionType(
+		// 		// 	code: 'region', 
+		// 		// 	name: 'Region', 
+		// 		// 	inputType: OptionType.InputType.TEXT,
+		// 		// 	displayOrder: displayOrder += 10,
+		// 		// 	required: true
+		// 		// ),
+		// 		new OptionType(
+		// 			code: 'zone', 
+		// 			name: 'Zone', 
+		// 			inputType: OptionType.InputType.TEXT,
+		// 			fieldLabel: 'zone FieldLabel',
+		// 			fieldCode: 'gomorpheus.label.zone',
+		// 			fieldName: 'zoneFieldName',
+		// 			displayOrder: displayOrder += 10,
+		// 			required: true)
+		// 	]
+		// 	return options
+		// } catch (Exception e) {
+		// 	log.error("Error in getOptionTypes: ${e.message}", e)
+		// 	return []
+		// }
+		return options
 	}
 
 	/**
@@ -196,7 +229,104 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	 */
 	@Override
 	ServiceResponse validate(Cloud cloudInfo, ValidateCloudRequest validateCloudRequest) {
-		return ServiceResponse.success()
+		def debug_log = """
+		SPN validate() called. Cloud = ${cloudInfo} validateCloudRequest = ${validateCloudRequest}
+		cloudInfo.getConfigMap = ${cloudInfo.getConfigMap()}
+		cloudInfo.getConfigMap().get('projectIDFieldName') = ${cloudInfo.getConfigMap().get('projectIDFieldName')}
+		cloudInfo.getConfigMap().get('serviceAccountKeyFieldName') = ${cloudInfo.getConfigMap().get('serviceAccountKeyFieldName')}
+		cloudInfo.getConfigMap().get('zoneFieldName') = ${cloudInfo.getConfigMap().get('zoneFieldName')}
+		cloudInfo.getConfigMap().get('regionFieldName') = ${cloudInfo.getConfigMap().get('regionFieldName')}
+		cloudInfo.getConfigMap().get('networkServer.id') = ${cloudInfo.getConfigMap().get('networkServer.id')}
+		cloudInfo.getConfigMap().get('networkServer') = ${cloudInfo.getConfigMap().get('networkServer')}
+		cloudInfo.getConfigMap().get('securityServer') = ${cloudInfo.getConfigMap().get('securityServer')}
+		cloudInfo.getConfigMap().get('backupMode') = ${cloudInfo.getConfigMap().get('backupMode')}
+		cloudInfo.getConfigMap().get('replicationMode') = ${cloudInfo.getConfigMap().get('replicationMode')}
+		cloudInfo.getConfigMap().get('useHostCredentials') = ${cloudInfo.getConfigMap().get('useHostCredentials')}
+		cloudInfo.getConfigMap().get('endpoint') = ${cloudInfo.getConfigMap().get('endpoint')}
+		cloudInfo.getConfigMap().get('credentialType') = ${cloudInfo.getConfigMap().get('credentialType')}
+		cloudInfo.getConfigMap().get('credentialUsername') = ${cloudInfo.getConfigMap().get('credentialUsername')}
+		cloudInfo.getConfigMap().get('credentialPassword') = ${cloudInfo.getConfigMap().get('credentialPassword')}
+		cloudInfo.getConfigMap().get('accessKey') = ${cloudInfo.getConfigMap().get('accessKey')}
+		cloudInfo.getConfigMap().get('secretKey') = ${cloudInfo.getConfigMap().get('secretKey')}		
+		"""
+		log.info(debug_log)
+
+
+		// SPN logs --- 
+		// [http-nio-8080-exec-3] SPN validate() called. Cloud = com.morpheusdata.model.Cloud@21730003 validateCloudRequest = com.morpheusdata.request.ValidateCloudRequest@587c4e0 
+		// cloudInfo.getConfigMap = [projectIDFieldName:spn-pid-1, serviceAccountKeyFieldName:spn-serviceaccount-key, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1] 
+		// cloudInfo.getConfigMap().get('projectIDFieldName') = spn-pid-1 
+		// cloudInfo.getConfigMap().get('serviceAccountKeyFieldName') = spn-serviceaccount-key 
+		// cloudInfo.getConfigMap().get('zoneFieldName') = null 
+		// cloudInfo.getConfigMap().get('regionFieldName') = null 
+		// cloudInfo.getConfigMap().get('networkServer.id') = unmanaged 
+		// cloudInfo.getConfigMap().get('networkServer') = [id:unmanaged] 
+		// cloudInfo.getConfigMap().get('securityServer') = off 
+		// cloudInfo.getConfigMap().get('backupMode') = internal 
+		// cloudInfo.getConfigMap().get('replicationMode') = -1 
+		// cloudInfo.getConfigMap().get('useHostCredentials') = null 
+		// cloudInfo.getConfigMap().get('endpoint') = null 
+		// cloudInfo.getConfigMap().get('credentialType') = null 
+		// cloudInfo.getConfigMap().get('credentialUsername') = null 
+		// cloudInfo.getConfigMap().get('credentialPassword') = null 
+		// cloudInfo.getConfigMap().get('accessKey') = null 
+		// cloudInfo.getConfigMap().get('secretKey') = null
+
+		try {
+			if(cloudInfo) {
+				def config = cloudInfo.getConfigMap()
+				def useHostCredentials = config.useHostCredentials in [true, 'true', 'on']
+				def username, password
+
+				if(config.endpoint == 'global') {
+					cloudInfo.regionCode = 'global'
+					//no more verification necessary this is a cost aggregator cloud only, disable cloud
+					return ServiceResponse.success()
+				}
+
+				if(!useHostCredentials) {
+					if(validateCloudRequest.credentialType?.toString().isNumber() || validateCloudRequest.credentialType == 'access-key-secret') {
+						username = validateCloudRequest.credentialUsername
+						password = validateCloudRequest.credentialPassword
+
+						if(!username) {
+							return new ServiceResponse(success: false, msg: 'Enter an access key', errors: ['credential.username': 'Required field'])
+						}
+						if(!password) {
+							return new ServiceResponse(success: false, msg: 'Enter a secret key', errors: ['credential.password': 'Required field'])
+						}
+					}
+					if(validateCloudRequest.credentialType == 'local') {
+						username = config.accessKey
+						password = config.secretKey
+
+						if(!username) {
+							return new ServiceResponse(success: false, msg: 'Enter an access key', errors: ['accessKey': 'Required field'])
+						}
+						if(!password) {
+							return new ServiceResponse(success: false, msg: 'Enter a secret key', errors: ['secretKey': 'Required field'])
+						}
+					}
+				}
+
+				//test creds
+				cloudInfo.accountCredentialData = [username: username, password: password]
+				def testResults = AmazonComputeUtility.testConnection(cloudInfo)
+				if(!testResults.success) {
+					if (testResults.invalidLogin) {
+						return new ServiceResponse(success: false, msg: 'Invalid amazon credentials')
+					} else {
+						return new ServiceResponse(success: false, msg: 'Unknown error connecting to amazon')
+					}
+				}
+				return ServiceResponse.success()
+			} else {
+				return new ServiceResponse(success: false, msg: 'SPN No cloud found')
+			}
+		} catch(e) {
+			log.error('Error validating cloud', e)
+			return new ServiceResponse(success: false, msg: 'SPN Error validating cloud')
+		}
 	}
 
 	/**
