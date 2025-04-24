@@ -214,8 +214,21 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 		SPN ServiceResponse validate(Cloud cloudInfo, ValidateCloudRequest validateCloudRequest) called. 
 		cloudInfo.getConfigMap = ${cloudInfo.getConfigMap()}                      
 		validateCloudRequest.opts = ${validateCloudRequest.opts}
+
+		cloudInfo.account = ${cloudInfo.account}
+		cloudType = ${cloudInfo.cloudType}
+		type = ${cloudInfo.type}
+		serviceUrl = ${cloudInfo.serviceUrl}
+		serviceUsername = ${cloudInfo.serviceUsername}
+		servicePassword = ${cloudInfo.servicePassword}
+		serviceToken = ${cloudInfo.serviceToken} 
+
+		accountCredentialData = ${cloudInfo.accountCredentialData}
+		accountCredentialLoaded = ${cloudInfo.accountCredentialLoaded}
+
 		"""
 		log.info(debug_log)
+//		cloudInfo.account = com.morpheusdata.model.Account@391339af cloudType = com.morpheusdata.model.CloudType@4ac9141 type = null serviceUrl = null serviceUsername = null servicePassword = null serviceToken = null accountCredentialData = null accountCredentialLoaded = false
 		try {
 			if (cloudInfo) {
 				String email = ""
@@ -478,7 +491,21 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 /* NOTES
 	[http-nio-8080-exec-5] SPN ServiceResponse validate(Cloud cloudInfo, ValidateCloudRequest validateCloudRequest) called.
 	Cloud = com.morpheusdata.model.Cloud@53783f14 validateCloudRequest = com.morpheusdata.request.ValidateCloudRequest@3995f524
-	cloudInfo.getConfigMap = [email:email-is-spn@email.com, private-key:private-key-is-spn@12345, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1]
+	cloudInfo.getConfigMap = [
+    email: "email-is-spn@email.com",
+    private-key: "private-key-is-spn@12345",
+    applianceUrl: "",
+    datacenterName: "",
+    networkServer.id: "unmanaged",
+    networkServer: [
+        id: "unmanaged"
+    ],
+    securityServer: "off",
+    backupMode: "internal",
+    replicationMode: -1
+]
+
+
 	validateCloudRequest.credentialUsername = null
 	validateCloudRequest.credentialPassword = null
 	validateCloudRequest.credentialType = local
