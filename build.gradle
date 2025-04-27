@@ -46,7 +46,22 @@ dependencies {
 	implementation "org.slf4j:slf4j-api:$slf4jVersion"
 	implementation "org.slf4j:slf4j-parent:$slf4jVersion"
 	implementation 'commons-net:commons-net:3.6'
-	implementation 'com.google.cloud:google-cloud-resourcemanager:3.0.0'
+	implementation group: 'com.google.cloud', name: 'google-cloud-resourcemanager', version: '1.62.0'
+
+
+	// JSON library for handling the service account key
+	implementation("org.json:json:20231013") // Replace with latest version
+
+	// Google API Client Library
+	implementation("com.google.api-client:google-api-client:2.3.0") //or latest version
+
+	//Google OAuth client library
+	implementation("com.google.oauth-client:google-oauth-client-java6:1.34.1")
+
+	implementation 'com.google.http-client:google-http-client-gson:1.41.0'
+
+	testImplementation 'org.apache.httpcomponents:httpclient:4.5.3'
+
 
 	// Include morpheus-core and it's dependencies
 	testImplementation 'io.reactivex.rxjava3:rxjava:3.1.7'
@@ -61,8 +76,6 @@ dependencies {
 	testImplementation "org.spockframework:spock-core"
 	testImplementation "org.spockframework:spock-junit4"  // you can remove this if your code does not rely on old JUnit 4 rules
 	testImplementation 'cglib:cglib-nodep:3.2.12'
-
-
 }
 
 

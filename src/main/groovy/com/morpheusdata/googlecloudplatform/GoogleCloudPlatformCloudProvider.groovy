@@ -237,7 +237,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 				email = validateCloudRequest.opts?.config['email']
 				privateKey = validateCloudRequest.opts?.config['private-key']
 
-				log.info("SPN retrieved email: ${email} and privateKey: ${privateKey}")
+				log.info("SPN Plugin retrieved email: ${email} and privateKey: ${privateKey}")
 				// SPN retrieved email: email-is-spn@email.com and privateKey: pvtkeyisspn123
 
 				if (email?.isBlank()) {
@@ -245,31 +245,37 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 				} else if (privateKey?.isBlank()) {
 					return new ServiceResponse(success: false, msg: 'Enter the private key')
 				} else {
-					def reqConfig = [
-							email  : email,
+//					RequestConfig reqConfig = [
+//							email  : email,
+//							privateKey: privateKey,
+//					]
+
+					RequestConfig requestConfig = new RequestConfig(
+							email: email,
 							privateKey: privateKey,
-					]
+					)
 					HttpApiClient apiClient = new HttpApiClient()
 					apiClient.networkProxy = cloudInfo.apiProxy
 					try {
 //						def projectList = NutanixPrismElementApiService.listContainers(apiClient, new RequestConfig(reqConfig))
-						log.info("SPN projectList API Call Placeholder")
-						def projectList = [:]
+
+						log.info("SPN Plugin projectList API Call Placeholder")
+						def projectList = GoogleCloudPlatformApiService.listProjects(apiClient, requestConfig)
 						if (projectList.success == true) {
-							return new ServiceResponse(success: true, msg: 'validation successful (api call)', data: projectList)
+							return new ServiceResponse(success: true, msg: 'Plugin validation successful (api call)', data: projectList)
 						} else {
-							return new ServiceResponse(success: false, msg: 'invalid credentials')
+							return new ServiceResponse(success: false, msg: 'Plugin invalid credentials')
 						}
 					} finally {
 						apiClient.shutdownClient()
 					}
 				}
 			} else {
-				return new ServiceResponse(success: false, msg: 'no cloud found')
+				return new ServiceResponse(success: false, msg: 'Plugin no cloud found')
 			}
 		} catch (e) {
 			log.error('Error validating cloud: ', e)
-			return new ServiceResponse(success: false, msg: 'error validating cloud', data: e)
+			return new ServiceResponse(success: false, msg: 'Plugin error validating cloud', data: e)
 		}
 	}
 
