@@ -34,7 +34,7 @@ class GoogleCloudPlatformPlugin extends Plugin {
         this.registerProvider(new GoogleCloudPlatformCloudProvider(this,this.morpheus))
         this.registerProvider(new GoogleCloudPlatformProvisionProvider(this,this.morpheus))
 
-        log.info("Google Cloud Platform Plugin initialized")
+        log.info("Initialized Google Cloud Platform Plugin version ${this.version}")
     }
 
     /**
@@ -42,6 +42,6 @@ class GoogleCloudPlatformPlugin extends Plugin {
      */
     @Override
     void onDestroy() {
-        log.info("Google Cloud Platform Plugin Uninstalled")
+        log.info("Uninstalled Google Cloud Platform Plugin version ${this.version}")
     }
 }
