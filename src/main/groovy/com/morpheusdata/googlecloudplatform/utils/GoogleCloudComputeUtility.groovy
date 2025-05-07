@@ -11,8 +11,10 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.http.apache.ApacheHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.client.json.JsonFactory
-
+import com.morpheusdata.model.NetworkProxy
+import org.apache.http.HttpHost
 import org.apache.http.client.HttpClient
+import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
@@ -21,20 +23,27 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 class GoogleCloudComputeUtility {
-    static CloseableHttpClient createHttpClient(Map clientConfig) {
+    static CloseableHttpClient createHttpClient(ClientConfig clientConfig) {
         // clientConfig holds any custom configurations for the HttpClient
-        // Configure connection pooling
+        HttpClientBuilder httpClientBuilder = HttpClients.custom()
+        
+        if (clientConfig?.proxyHost && clientConfig?.proxyPort) {
+            HttpHost proxy = new HttpHost(clientConfig.proxyHost, clientConfig.proxyPort)
+            httpClientBuilder.setProxy(proxy)
+            log.info("Using proxy: ${proxy.getHostName()}:${proxy.getPort()}")
+        }
+
+        // Configure a pooling connection manager for better performance under high load
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager()
-        connectionManager.setMaxTotal(100)
-        connectionManager.setDefaultMaxPerRoute(20)
+        connectionManager.setMaxTotal(200) // Maximum total connections
+        connectionManager.setDefaultMaxPerRoute(20) // Maximum connections per route
+        httpClientBuilder.setConnectionManager(connectionManager)
 
         // Build and return the HttpClient
-        return HttpClients.custom()
-                .setConnectionManager(connectionManager)
-                .build()
+        return httpClientBuilder.build()
     }
 
-    static protected CloudResourceManager getCloudResourceManager(String email, String privateKey, String projectId = '') {
+    static protected CloudResourceManager getCloudResourceManager(String email, String privateKey, NetworkProxy networkProxy = null, String projectId = '') {
         if(!email || !privateKey) {
             throw new IllegalArgumentException("Email and private key are required to create CloudResourceManager instance.")
         }
@@ -56,8 +65,9 @@ class GoogleCloudComputeUtility {
 """
         InputStream is = new ByteArrayInputStream(credentialsString.getBytes())
         GoogleCredential credential = GoogleCredential.fromStream(is).createScoped(Collections.singleton(CloudResourceManagerScopes.CLOUD_PLATFORM))
-        def clientConfig = [:]
-        def proxyOptions
+        ClientConfig clientConfig = new ClientConfig()
+        if(networkProxy?.getProxyHost()) clientConfig.proxyHost = networkProxy.getProxyHost()
+        if(networkProxy?.getProxyPort()) clientConfig.proxyPort = networkProxy.getProxyPort()
         HttpClient httpClient = createHttpClient(clientConfig)
         ApacheHttpTransport httpTransport = new ApacheHttpTransport(httpClient)
         JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance()
@@ -70,11 +80,11 @@ class GoogleCloudComputeUtility {
         return client
     }
 
-    static testConnection(String email, String privateKey) {
+    static testConnection(String email, String privateKey, NetworkProxy networkProxy = null) {
         log.info("Testing connection to Google Cloud Platform ...")
         Map connectionResponse = [success: false, projects: [], activeProjects: []]
         try {
-            CloudResourceManager cloudResourceManager = getCloudResourceManager(email, privateKey)
+            CloudResourceManager cloudResourceManager = getCloudResourceManager(email, privateKey, networkProxy)
             ListProjectsResponse listProjectsResponse = cloudResourceManager.projects().list().execute()
 
             connectionResponse.success = true
@@ -85,7 +95,7 @@ class GoogleCloudComputeUtility {
             log.info("Successfully connected to Google Cloud Platform. \
                 Found projects ${connectionResponse.projects}")
         } catch(GoogleJsonResponseException e2) {
-            log.error("Failed to connect to Google Cloud Platform. \
+            log.error("Failed to connect to Google Cloud Platform, GoogleJsonResponseException. \
                 Error message: ${e2.getMessage()} Error details: ${e2.getDetails()} ")
         } catch (Exception e) {
             log.error("Failed to connect to Google Cloud Platform. \
@@ -93,4 +103,9 @@ class GoogleCloudComputeUtility {
         }
         return connectionResponse
     }
+}
+
+class ClientConfig {
+    String proxyHost
+    Integer proxyPort
 }

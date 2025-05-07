@@ -14,6 +14,7 @@ import com.morpheusdata.model.ComputeServerType
 import com.morpheusdata.model.Datastore
 import com.morpheusdata.model.Icon
 import com.morpheusdata.model.Network
+import com.morpheusdata.model.NetworkProxy
 import com.morpheusdata.model.NetworkSubnetType
 import com.morpheusdata.model.NetworkType
 import com.morpheusdata.model.OptionType
@@ -240,8 +241,8 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 
 			if(!email) return new ServiceResponse(success: false, msg: "Email is required")
 			if(!privateKey) return new ServiceResponse(success: false, msg: "Private Key is required")
-
-			def connectionResponse = GoogleCloudComputeUtility.testConnection(email, privateKey)
+			NetworkProxy networkProxy = cloudInfo.getApiProxy()
+			def connectionResponse = GoogleCloudComputeUtility.testConnection(email, privateKey, networkProxy)
 			if(!connectionResponse.success)  return new ServiceResponse(
 					success: false,
 					msg: "Invalid Credentials. Connection failed for Google Cloud Platform."
