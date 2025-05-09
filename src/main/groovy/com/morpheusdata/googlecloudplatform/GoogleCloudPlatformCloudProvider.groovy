@@ -4,6 +4,7 @@ import com.morpheusdata.core.MorpheusContext
 import com.morpheusdata.core.Plugin
 import com.morpheusdata.core.providers.CloudProvider
 import com.morpheusdata.core.providers.ProvisionProvider
+import com.morpheusdata.googlecloudplatform.utils.GoogleCloudComputeUtility
 import com.morpheusdata.model.BackupProvider
 import com.morpheusdata.model.Cloud
 import com.morpheusdata.model.CloudFolder
@@ -13,6 +14,7 @@ import com.morpheusdata.model.ComputeServerType
 import com.morpheusdata.model.Datastore
 import com.morpheusdata.model.Icon
 import com.morpheusdata.model.Network
+import com.morpheusdata.model.NetworkProxy
 import com.morpheusdata.model.NetworkSubnetType
 import com.morpheusdata.model.NetworkType
 import com.morpheusdata.model.OptionType
@@ -20,6 +22,9 @@ import com.morpheusdata.model.StorageControllerType
 import com.morpheusdata.model.StorageVolumeType
 import com.morpheusdata.request.ValidateCloudRequest
 import com.morpheusdata.response.ServiceResponse
+import groovy.util.logging.Slf4j
+
+@Slf4j
 
 class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	public static final String CLOUD_PROVIDER_CODE = 'google-cloud-platform-plugin.cloud'
@@ -69,6 +74,57 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	@Override
 	Collection<OptionType> getOptionTypes() {
 		Collection<OptionType> options = []
+
+		int displayOrderStart = 0
+		options << new OptionType(
+				name: 'Credentials',
+				code: 'zoneType.google.credential',
+				inputType: OptionType.InputType.CREDENTIAL,
+				required: true,
+				defaultValue: 'username-api-key',
+				displayOrder: displayOrderStart,
+				optionSource: 'credentials',
+				config: '{"credentialTypes":["local", "email-private-key", "username-api-key"]}',
+				// loads validateCloudRequest.{credentialUsername, credentialPassword}
+
+				fieldName: 'credential', 
+				fieldLabel: 'Credential',  
+				fieldCode: 'gomorpheus.optionType.credential',
+				fieldContext: 'config',
+		)
+
+		options << new OptionType(
+				name: 'Client Email',
+				helpText: 'email of google service account',
+				code: 'google-cloud-platform-client-email',
+				inputType: OptionType.InputType.TEXT,
+				required: true,
+				placeHolderText: """xxxxxxxxxx@developer.gserviceaccount.com""",
+				displayOrder: displayOrderStart+=10,
+				localCredential: true,	// expose only when local credential is selected
+
+				fieldName: 'email', // loads cloudConfig.email
+				fieldLabel: 'Client Email', 
+				fieldCode: 'gomorpheus.optionType.email',
+				fieldContext: 'config',
+		)
+
+		options << new OptionType(
+				name: 'Private Key',
+				helpText: 'private key of the google service account',
+				code: 'google-cloud-platform-private-key',
+				inputType: OptionType.InputType.TEXT,
+				required: true,
+				placeHolderText: """-----BEGIN PRIVATE KEY-----\\nxxxxx\\n-----END PRIVATE KEY-----\\n""",
+				displayOrder: displayOrderStart+=10,
+				localCredential: true,	// expose only when local credential is selected
+
+				fieldName: 'private-key', // loads cloudConfig.private-key
+				fieldLabel: 'Private Key', 
+				fieldCode: 'gomorpheus.optionType.private-key',
+				fieldContext: 'config',
+		)
+
 		return options
 	}
 
@@ -152,7 +208,53 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	 */
 	@Override
 	ServiceResponse validate(Cloud cloudInfo, ValidateCloudRequest validateCloudRequest) {
-		return ServiceResponse.success()
+		Map cloudConfig = cloudInfo.getConfigMap()
+		String email, privateKey
+
+		try {
+			if(!cloudInfo) {
+				return ServiceResponse.error("Cloud not found")
+			}
+
+			switch (validateCloudRequest.credentialType) {
+				case 'local':
+					email = cloudConfig.get('email')
+					privateKey = cloudConfig.get('private-key')
+					break
+
+				// current UI version v.8.0.5.dev does not support credentialType 'email-private-key'
+				// private-key field is unsupported to enter value in UI form
+				// private-key field is unsupported to save at internal secret store (infrastructure > trust > credentials)
+				// until UI is fixed,
+				// workaround implementation in plugin
+				// to support the feature - 'load credential data from internal secret store'
+				// is to use 'username-api-key' credentialType as fallthrough option
+				// to save and load email and private-key from internal secret store as username and api-key
+				case 'email-private-key':
+				case 'username-api-key':
+					email = validateCloudRequest.credentialUsername
+					privateKey = validateCloudRequest.credentialPassword
+					break
+				default:
+					return ServiceResponse.error("Invalid credential type")
+			}
+
+			if(!email) return new ServiceResponse(success: false, msg: "Email is required")
+			if(!privateKey) return new ServiceResponse(success: false, msg: "Private Key is required")
+			NetworkProxy networkProxy = cloudInfo.getApiProxy()
+			def connectionResponse = GoogleCloudComputeUtility.testConnection(email, privateKey, networkProxy)
+			if(!connectionResponse.success)  return new ServiceResponse(
+					success: false,
+					msg: "Invalid Credentials. Connection failed for Google Cloud Platform."
+			)
+			return ServiceResponse.success()
+		} catch (Exception e) {
+			log.error("Error validating cloud: ${e.message}")
+			return new ServiceResponse(
+					success: false,
+					msg: "Error validating cloud: ${e.message}",
+			)
+		}
 	}
 
 	/**
@@ -165,6 +267,7 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 	ServiceResponse initializeCloud(Cloud cloudInfo) {
 		return ServiceResponse.success()
 	}
+
 
 	/**
 	 * Zones/Clouds are refreshed periodically by the Morpheus Environment. This includes things like caching of brownfield
@@ -355,3 +458,11 @@ class GoogleCloudPlatformCloudProvider implements CloudProvider {
 		return 'Google Cloud Platform'
 	}
 }
+
+/*
+localCreds
+	[http-nio-8080-exec-2] code: cloudConfig.get('google-cloud-platform-private-key'): null fieldName: cloudConfig.get('private-key'): -----BEGIN PRIVATE KEY----- xxxxx -----END PRIVATE KEY----- cloudConfig.'private-key': -----BEGIN PRIVATE KEY----- xxxxx -----END PRIVATE KEY----- cloudInfo: getConfigMap(): [email:112233445566-compute@developer.gserviceaccount.com, private-key:-----BEGIN PRIVATE KEY----- xxxxx -----END PRIVATE KEY-----, region:gotham, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1] validateCloudRequest: credentialType: local credentialUsername: null credentialPassword: null opts: [stepIndex:2, cloudfilter:, zoneType:google-cloud-platform-plugin.cloud, zone.zoneType.id:1, zone:[zoneType.id:1, zoneType:[id:1, code:google-cloud-platform-plugin.cloud], zoneType.code:google-cloud-platform-plugin.cloud, name:name-pn, code:, labelString:, location:, _enabled:, enabled:on, _autoRecoverPowerState:, autoRecoverPowerState:on, networkDomain.id:, networkDomain:[id:], timezone:, securityMode:off, guidanceMode:off, costingMode:off, agentMode:cloudInit, _defaultDatastoreSyncActive:, defaultDatastoreSyncActive:on, _defaultNetworkSyncActive:, defaultNetworkSyncActive:on, _applianceUrlProxyBypass:, applianceUrlProxyBypass:*******, noProxy:, userDataLinux:], zone.zoneType.code:google-cloud-platform-plugin.cloud, zone.name:name-pn, zone.code:, zone.labelString:, zone.location:, zone._enabled:, zone.enabled:on, zone._autoRecoverPowerState:, zone.autoRecoverPowerState:on, credential.type:local, credential:[type:local, integration.id:, integration:[id:]], credential.integration.id:, config.email:112233445566-compute@developer.gserviceaccount.com, config:[email:112233445566-compute@developer.gserviceaccount.com, private-key:-----BEGIN PRIVATE KEY----- xxxxx -----END PRIVATE KEY-----, region:gotham, applianceUrl:, datacenterName:, networkServer.id:unmanaged, networkServer:[id:unmanaged], securityServer:off, backupMode:internal, replicationMode:-1], config.private-key:-----BEGIN PRIVATE KEY----- xxxxx -----END PRIVATE KEY-----, config.region:gotham, zone.networkDomain.id:, config.applianceUrl:, zone.timezone:, config.datacenterName:, config.networkServer.id:unmanaged, zone.securityMode:off, config.securityServer:off, config.backupMode:internal, config.replicationMode:-1, zone.guidanceMode:off, zone.costingMode:off, zone.agentMode:cloudInit, zone._defaultDatastoreSyncActive:, zone.defaultDatastoreSyncActive:on, zone._defaultNetworkSyncActive:, zone.defaultNetworkSyncActive:on, zone._applianceUrlProxyBypass:, zone.applianceUrlProxyBypass:*******, zone.noProxy:, zone.userDataLinux:, controller:siteZone, action:step, user:Sathvik PN[sathvikpn - sathvikpn@hpe.com]]
+
+
+
+ */
